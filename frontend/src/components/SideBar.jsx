@@ -57,7 +57,7 @@ function SideBar() {
 
                 <button
                     className='flex items-center justify-center w-9 h-9 rounded-xl text-zinc-950 bg-linear-to-tr from-teal-400 to-cyan-300 hover:brightness-110 shadow-[0_0_15px_-3px_rgba(45,212,191,0.4)] transition-all duration-200 border-none cursor-pointer mt-1'
-                    onClick={handleCreateConversation}
+                    onClick={() => dispatch(setSelectedConversation(null))}
                 >
                     <Plus size={18} strokeWidth={2.5} />
                 </button>
@@ -119,7 +119,7 @@ function SideBar() {
                 <div className='flex flex-col h-full relative overflow-hidden'>
                     <div className='pointer-events-none absolute -top-24 -left-24 w-64 h-64 bg-teal-500/[0.07] rounded-full blur-3xl' />
 
-                    {/* Header */}
+                    
                     <div className='flex items-center gap-2.5 px-4 py-4 border-b border-white/[0.05] relative z-10'>
                         <button
                             className='hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.05] transition-colors duration-150 bg-transparent border-none cursor-pointer'
@@ -154,23 +154,23 @@ function SideBar() {
                         </button>
                     </div>
 
-                    {/* New Chat CTA */}
+                    
                     <div className='px-4 pt-4 pb-2 relative z-10'>
                         <button
                             className='w-full flex items-center justify-center gap-2 text-[13.5px] font-semibold text-zinc-950 bg-linear-to-r from-teal-400 via-teal-300 to-cyan-400 rounded-xl py-[10px] border-none cursor-pointer shadow-[0_0_20px_-5px_rgba(45,212,191,0.45)] hover:shadow-[0_0_25px_-3px_rgba(45,212,191,0.65)] hover:brightness-105 active:scale-[0.99] transition-all duration-200'
-                            onClick={handleCreateConversation}
+                            onClick={() => dispatch(setSelectedConversation(null))}
                         >
                             <Plus size={16} strokeWidth={2.5} />
                             New Chat
                         </button>
                     </div>
 
-                    {/* Section Label */}
+                    
                     <div className='px-5 pt-4 pb-2 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-zinc-500'>
                         {conversations?.length === 0 ? "No Recent Conversations" : "Recents"}
                     </div>
 
-                    {/* Conversation List */}
+                    
                     <div className='flex-1 overflow-y-auto px-3 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden space-y-0.5 relative z-10'>
                         {conversations?.map((conv) => {
                             const isActive = selectedConversation?._id === conv?._id
@@ -203,7 +203,7 @@ function SideBar() {
                         })}
                     </div>
 
-                    {/* Footer / User Profile */}
+                   
                     <div className='mx-3 h-px bg-linear-to-r from-transparent via-white/[0.07] to-transparent' />
                     <div className='p-3 relative z-10'>
                         {userData ? (

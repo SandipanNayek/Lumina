@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import getMessages from '../features/getMessages'
 import { setArtifacts, setMessages } from '../redux/messageSlice'
@@ -18,9 +18,10 @@ function ChatArea({ artifactOpen, onToggleArtifact, onSelectArtifact }) {
         return
       }
       const data = await getMessages(selectedConversation._id)
-      dispatch(setMessages(data))
+      const safeMessages = Array.isArray(data) ? data : []
+      dispatch(setMessages(safeMessages))
 
-      const latestWithArtifacts = [...data]
+      const latestWithArtifacts = [...safeMessages]
         .reverse()
         .find((m) => Array.isArray(m.artifacts) && m.artifacts.length > 0)
       dispatch(setArtifacts(latestWithArtifacts ? latestWithArtifacts.artifacts : []))

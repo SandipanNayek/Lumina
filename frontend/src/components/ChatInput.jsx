@@ -1,10 +1,11 @@
 import { Code2, FileText, Globe, ImageIcon, MessageSquare, Mic, MicOff, Paperclip, Presentation, Send, X, Zap } from 'lucide-react'
-import React, { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import sendMessage from '../features/sendMessage'
 import { addMessage, setArtifacts, setIsLoading, setMessages } from '../redux/messageSlice'
 import { createConversation } from '../features/createConversation'
-import { addConversation, setSelectedConversation } from '../redux/conversationSlice'
+import { addConversation, setconvTitle, setSelectedConversation } from '../redux/conversationSlice'
+import { updateConversation } from '../features/updateConversation'
 
 function ChatInput() {
   const [value, setValue] = useState("")
@@ -78,7 +79,7 @@ function ChatInput() {
         agent: selectedAgent.toLowerCase(),
       }
 
-      dispatch(addMessage({ role: "user", content: promptText || selectedFile?.name }))
+      dispatch(addMessage({ role: "user", content: promptText || selectedFile?.name  }))
       setValue("")
       setSelectedFile(null)
       if (fileRef.current) fileRef.current.value = ""
@@ -86,11 +87,53 @@ function ChatInput() {
       const data = await sendMessage(payload)
       if (data) {
         dispatch(setArtifacts(data.artifacts || []))
-        dispatch(addMessage({ role: "assistant", content: data?.answer, images: data?.images || [] }))
+        dispatch(
+          addMessage({
+            role: "assistant",
+            content: data?.answer,
+            images: data?.images || [],
+            artifacts: data?.artifacts || [],
+          })
+        )
       }
 
-      if (isNewConv && conversation) {
-        dispatch(setSelectedConversation(conversation))
+      const shouldUpdateTitle =
+        conversation?._id &&
+        (isNewConv || !conversation?.title || conversation.title === "New Chat")
+
+      let finalConversation = conversation
+
+      if (shouldUpdateTitle) {
+        const nextTitle = (
+          data?.title ||
+          data?.conversation?.title ||
+          promptText ||
+          selectedFile?.name ||
+          "New Chat"
+        ).slice(0, 40)
+
+        const updatedRes = await updateConversation({
+          conversationId: conversation._id,
+          title: nextTitle,
+        })
+
+        const confirmedTitle = updatedRes?.title || updatedRes?.conversation?.title || nextTitle
+
+        dispatch(
+          setconvTitle({
+            conversationId: conversation._id,
+            title: confirmedTitle,
+          })
+        )
+
+        finalConversation = {
+          ...conversation,
+          title: confirmedTitle,
+        }
+      }
+
+      if (isNewConv && finalConversation) {
+        dispatch(setSelectedConversation(finalConversation))
       }
     } catch (error) {
       console.error(error)

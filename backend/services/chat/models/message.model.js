@@ -1,39 +1,43 @@
 import mongoose from "mongoose";
 
-// const fileSchema=new mongoose.Schema({
-//     name:String,
-//     content:String
-// },{
-//     _id:false
-// })
+const artifactSchema = new mongoose.Schema(
+  {
+    type: { type: String },
+    title: { type: String },
+    content: { type: mongoose.Schema.Types.Mixed },
+    language: { type: String },
+    url: { type: String },
+  },
+  { _id: false, strict: false }
+);
 
-// const artifactSchema=new mongoose.Schema({
-//     id:Number,
-//     type:String,
-//     title:String,
-//     files:[fileSchema],
-
-// },{
-//     _id:false
-// })
-
-
-const messageSchema=new mongoose.Schema({
-    conversationId:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Conversation"
+const messageSchema = new mongoose.Schema(
+  {
+    conversationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Conversation",
+      required: true,
     },
-    role:{
-        type:String,
-        enum:["user","assistant"]
+    role: {
+      type: String,
+      enum: ["user", "assistant", "system"],
+      required: true,
     },
-    content:String,
-    // images:[String],
-    // artifacts:[artifactSchema]
+    content: {
+      type: String,
+      default: "",
+    },
+    images: {
+      type: [String],
+      default: [],
+    },
+    artifacts: {
+      type: [artifactSchema],
+      default: [],
+    },
+  },
+  { timestamps: true }
+);
 
-},{
-    timestamps:true
-})
-
-const Message=mongoose.model("Message",messageSchema)
-export default Message
+const Message = mongoose.model("Message", messageSchema);
+export default Message;
