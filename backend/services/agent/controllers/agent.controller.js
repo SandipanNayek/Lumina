@@ -1,7 +1,7 @@
 import axios from "axios";
 import { graph } from "../graph/graph.js";
 import { addMessage } from "../config/memory.js";
-import redis from "../../../shared/redis/redis.js";
+
 
 export const agent = async (req, res) => {
   try {
@@ -54,7 +54,7 @@ export const agent = async (req, res) => {
       (result?.artifact ? [result.artifact] : []);
     const artifacts = (Array.isArray(rawArtifacts) ? rawArtifacts : [rawArtifacts]).filter(Boolean);
 
-    // Prevent silent blank bubbles if an agent returns empty output
+   
     const answerText =
       extractedText.trim() ||
       (images.length === 0 && artifacts.length === 0
@@ -79,8 +79,6 @@ export const agent = async (req, res) => {
       },
       authHeader
     );
-
-    await redis.del(`messages-${conversationId}`);
 
     return res.status(200).json({
       answer: answerText,
