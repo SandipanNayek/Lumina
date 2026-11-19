@@ -30,7 +30,7 @@ function ChatArea({ artifactOpen, onToggleArtifact, onSelectArtifact }) {
   }, [selectedConversation?._id, dispatch])
 
   return (
-    <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-[#07090e]">
+    <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-[#07090e] antialiased">
       <Nav
         artifactOpen={artifactOpen}
         onToggleArtifact={onToggleArtifact}

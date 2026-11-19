@@ -71,7 +71,7 @@ function SideBar() {
             />
 
             <aside
-                className={`fixed lg:static inset-y-0 left-0 z-50 h-screen shrink-0 bg-[#07090e] border-r border-white/[0.06] overflow-hidden select-none will-change-[width,transform] transition-[width,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] w-[275px] ${collapsed ? "lg:w-[60px]" : "lg:w-[275px]"} ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+                className={`fixed lg:static inset-y-0 left-0 z-50 h-screen shrink-0 bg-[#07090e] border-r border-white/[0.06] overflow-hidden select-none antialiased will-change-[width,transform] transition-[width,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] w-[275px] ${collapsed ? "lg:w-[60px]" : "lg:w-[275px]"} ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
             >
                 <div className='relative w-full h-full overflow-hidden'>
                     <div className='pointer-events-none absolute -top-24 -left-24 w-64 h-64 bg-teal-500/[0.07] rounded-full blur-3xl' />
@@ -150,12 +150,12 @@ function SideBar() {
 
                             <div className='flex items-center gap-2 flex-1'>
                                 <span className='w-2 h-2 rounded-full bg-teal-400 shadow-[0_0_8px_#2dd4bf]' />
-                                <span className='text-[16px] font-bold tracking-tight bg-linear-to-r from-white via-zinc-100 to-teal-200 bg-clip-text text-transparent'>
+                                <span className='text-[17.5px] font-bold tracking-tight bg-linear-to-r from-white via-zinc-100 to-teal-200 bg-clip-text text-transparent'>
                                     Lumina
                                 </span>
                             </div>
 
-                            <span className='text-[10.5px] font-semibold uppercase tracking-wider text-teal-300 bg-teal-500/10 border border-teal-500/25 px-2 py-0.5 rounded-full'>
+                            <span className='text-[11.5px] font-semibold uppercase tracking-wider text-teal-300 bg-teal-500/10 border border-teal-500/25 px-2 py-0.5 rounded-full'>
                                 {userData?.plan || "Free"}
                             </span>
 
@@ -169,7 +169,7 @@ function SideBar() {
 
                         <div className='px-4 pt-4 pb-2 relative z-10'>
                             <button
-                                className='w-full flex items-center justify-center gap-2 text-[13.5px] font-semibold text-zinc-950 bg-linear-to-r from-teal-400 via-teal-300 to-cyan-400 rounded-xl py-[10px] border-none cursor-pointer shadow-[0_0_20px_-5px_rgba(45,212,191,0.45)] hover:shadow-[0_0_25px_-3px_rgba(45,212,191,0.65)] hover:brightness-105 active:scale-[0.99] transition-all duration-200'
+                                className='w-full flex items-center justify-center gap-2 text-[14.5px] font-semibold text-zinc-950 bg-linear-to-r from-teal-400 via-teal-300 to-cyan-400 rounded-xl py-[10px] border-none cursor-pointer shadow-[0_0_20px_-5px_rgba(45,212,191,0.45)] hover:shadow-[0_0_25px_-3px_rgba(45,212,191,0.65)] hover:brightness-105 active:scale-[0.99] transition-all duration-200'
                                 onClick={handleNewChat}
                             >
                                 <Plus size={16} strokeWidth={2.5} />
@@ -177,7 +177,7 @@ function SideBar() {
                             </button>
                         </div>
 
-                        <div className='px-5 pt-4 pb-2 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-zinc-500'>
+                        <div className='px-5 pt-4 pb-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-zinc-500'>
                             {conversations?.length === 0 ? "No Recent Conversations" : "Recents"}
                         </div>
 
@@ -205,7 +205,7 @@ function SideBar() {
                                             <MessageSquare size={13} />
                                         </div>
 
-                                        <span className={`text-[13px] truncate transition-colors duration-200 ${isActive ? "font-semibold text-white" : "font-medium text-zinc-400 group-hover:text-zinc-200"}`}>
+                                        <span className={`text-[14px] truncate transition-colors duration-200 ${isActive ? "font-semibold text-white" : "font-medium text-zinc-400 group-hover:text-zinc-200"}`}>
                                             {conv?.title || "New Chat"}
                                         </span>
                                     </div>
@@ -234,10 +234,10 @@ function SideBar() {
                                     </div>
 
                                     <div className='flex-1 min-w-0'>
-                                        <p className='text-[13px] font-semibold text-zinc-100 truncate'>
+                                        <p className='text-[14px] font-semibold text-zinc-100 truncate'>
                                             {userData?.name || "User"}
                                         </p>
-                                        <p className='text-[10.5px] font-medium text-teal-400/80 uppercase tracking-wider mt-0.5'>
+                                        <p className='text-[11.5px] font-medium text-teal-400/80 uppercase tracking-wider mt-0.5'>
                                             {userData?.plan || "Free plan"}
                                         </p>
                                     </div>
@@ -259,7 +259,7 @@ function SideBar() {
                                     </div>
                                 </div>
                             ) : (
-                                <button className='w-full flex items-center justify-center gap-2 text-sm font-medium text-zinc-200 bg-white/[0.04] border border-white/[0.08] rounded-xl py-[11px] cursor-pointer hover:bg-teal-500/10 hover:border-teal-500/30 hover:text-teal-200 transition-all duration-200'>
+                                <button className='w-full flex items-center justify-center gap-2 text-[15px] font-medium text-zinc-200 bg-white/[0.04] border border-white/[0.08] rounded-xl py-[11px] cursor-pointer hover:bg-teal-500/10 hover:border-teal-500/30 hover:text-teal-200 transition-all duration-200'>
                                     Login
                                 </button>
                             )}

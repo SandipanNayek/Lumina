@@ -1,9 +1,8 @@
-
 import { Sparkles } from 'lucide-react'
 
 function LoadingAnimation() {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 antialiased">
       <div className="shrink-0 w-7 h-7 rounded-lg bg-teal-500/10 border border-teal-500/25 flex items-center justify-center shadow-[0_0_12px_-3px_rgba(45,212,191,0.3)]">
         <Sparkles size={13} className="text-teal-300 animate-pulse" />
       </div>

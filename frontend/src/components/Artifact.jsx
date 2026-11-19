@@ -180,18 +180,18 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script async src="https://cdn.tailwindcss.com"></script>
   <style>
-    html, body, #root { min-height: 100%; margin: 0; }
+    html, body, #root { min-height: 100%; margin: 0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
     ${combinedCss}
   </style>
 </head>
 <body>
-  <div id="root"><div style="padding:20px;font-family:system-ui,sans-serif;color:#64748b;font-size:13px;">Loading preview...</div></div>
+  <div id="root"><div style="padding:20px;font-family:system-ui,sans-serif;color:#64748b;font-size:14px;">Loading preview...</div></div>
   <script>
     function showPreviewError(title, err) {
       var root = document.getElementById("root");
       if (root) {
         root.innerHTML =
-          '<div style="padding:16px;color:#f43f5e;background:#0b0e15;min-height:100vh;font-family:monospace;">' +
+          '<div style="padding:16px;color:#f43f5e;background:#0b0e15;min-height:100vh;font-family:monospace;font-size:14px;">' +
           "<strong>" + title + ":</strong>" +
           '<pre style="white-space:pre-wrap;margin-top:8px;">' +
           (err && (err.stack || err.message) ? (err.stack || err.message) : String(err)) +
@@ -652,7 +652,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
             if (this.state.error) {
               return React.createElement(
                 "div",
-                { style: { padding: "16px", color: "#f43f5e", background: "#0b0e15", minHeight: "100vh", fontFamily: "monospace" } },
+                { style: { padding: "16px", color: "#f43f5e", background: "#0b0e15", minHeight: "100vh", fontFamily: "monospace", fontSize: "14px" } },
                 React.createElement("strong", null, "Component Render Error:"),
                 React.createElement("pre", { style: { whiteSpace: "pre-wrap", marginTop: "8px" } }, String(this.state.error))
               );
@@ -709,7 +709,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
             React.createElement(ErrorBoundary, null, React.createElement(PreviewAppHost))
           );
         } else {
-          rootEl.innerHTML = '<div style="padding:16px;color:#94a3b8;background:#0b0e15;min-height:100vh;font-family:monospace;">No default exported React/Next.js component found in ' + bundle.entry + '.</div>';
+          rootEl.innerHTML = '<div style="padding:16px;color:#94a3b8;background:#0b0e15;min-height:100vh;font-family:monospace;font-size:14px;">No default exported React/Next.js component found in ' + bundle.entry + '.</div>';
         }
       } catch (err) {
         showPreviewError("Preview Compilation Error", err);
@@ -729,10 +729,10 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
 <html>
 <head>
   <style>
-    body { margin: 0; background: #0b0e15; color: #cbd5e1; font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; padding: 24px; box-sizing: border-box; text-align: center; }
+    body { margin: 0; background: #0b0e15; color: #cbd5e1; font-family: system-ui, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: flex; align-items: center; justify-content: center; height: 100vh; padding: 24px; box-sizing: border-box; text-align: center; }
     .box { max-width: 340px; border: 1px solid #1e293b; background: #0f1420; padding: 20px; border-radius: 12px; }
-    h3 { margin: 0 0 8px; color: #2dd4bf; font-size: 15px; }
-    p { margin: 0; font-size: 13px; color: #94a3b8; line-height: 1.5; }
+    h3 { margin: 0 0 8px; color: #2dd4bf; font-size: 16px; }
+    p { margin: 0; font-size: 14px; color: #94a3b8; line-height: 1.55; }
     code { color: #e2e8f0; background: #1e293b; padding: 2px 6px; border-radius: 4px; }
   </style>
 </head>
@@ -749,7 +749,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
 <html>
 <head>
   <style>
-    body { margin: 0; background: #0b0e15; color: #a1a1aa; font-family: monospace; padding: 16px; overflow-y: auto; }
+    body { margin: 0; background: #0b0e15; color: #a1a1aa; font-family: monospace; font-size: 14px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; padding: 16px; overflow-y: auto; }
     .log { color: #34d399; margin-bottom: 8px; white-space: pre-wrap; word-break: break-all; }
     .err { color: #f43f5e; margin-bottom: 8px; white-space: pre-wrap; word-break: break-all; }
     .info { color: #60a5fa; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #1e293b; font-weight: bold; }
@@ -804,7 +804,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
     const scriptBlock = jsFiles.map((f) => `<script>\n${f.content}\n</script>`).join("\n")
 
     if (!html.trim()) {
-      return `<!DOCTYPE html><html><body style="margin:0;background:#0b0e15;color:#94a3b8;font-family:monospace;padding:16px;">Preview is not available for this file type. Switch to the Code tab to view or download.</body></html>`
+      return `<!DOCTYPE html><html><body style="margin:0;background:#0b0e15;color:#94a3b8;font-family:monospace;font-size:14px;padding:16px;-webkit-font-smoothing:antialiased;">Preview is not available for this file type. Switch to the Code tab to view or download.</body></html>`
     }
 
     html = html.includes("</head>")
@@ -829,7 +829,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
       await navigator.clipboard.writeText(currentCode)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    } catch (err) {}
+    } catch {}
   }
 
   const handleDownload = () => {
@@ -858,7 +858,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
 
       <aside
         aria-hidden={!visible}
-        className={`fixed inset-y-0 right-0 z-40 lg:static lg:z-auto shrink-0 h-full bg-[#07090e] text-zinc-100 select-none overflow-hidden transform-gpu will-change-[width,transform,opacity] transition-[width,transform,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`fixed inset-y-0 right-0 z-40 lg:static lg:z-auto shrink-0 h-full bg-[#07090e] text-zinc-100 select-none antialiased overflow-hidden transform-gpu will-change-[width,transform,opacity] transition-[width,transform,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           visible
             ? "w-full lg:w-[420px] xl:w-[480px] opacity-100 translate-x-0 border-l border-white/[0.06] pointer-events-auto"
             : "w-full lg:w-0 opacity-0 translate-x-full lg:translate-x-0 border-l-0 pointer-events-none"
@@ -874,11 +874,11 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
               <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-teal-500/10 border border-teal-500/25 shrink-0">
                 <FileCode2 size={14} className="text-teal-300" />
               </div>
-              <span className="text-[13.5px] font-semibold text-zinc-100 truncate">
+              <span className="text-[14.5px] font-semibold text-zinc-100 truncate">
                 {artifact?.title || "Artifact"}
               </span>
               {currentFile?.name && (
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-teal-300 bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded-full shrink-0">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-teal-300 bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded-full shrink-0">
                   {currentLang}
                 </span>
               )}
@@ -891,7 +891,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
                     <button
                       onClick={() => setViewMode("preview")}
                       title="Preview"
-                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer border-none ${
+                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-[12px] font-medium transition-all cursor-pointer border-none ${
                         viewMode === "preview"
                           ? "bg-teal-500/20 text-teal-300"
                           : "bg-transparent text-zinc-400 hover:text-zinc-200"
@@ -903,7 +903,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
                     <button
                       onClick={() => setViewMode("code")}
                       title="Code"
-                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer border-none ${
+                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-[12px] font-medium transition-all cursor-pointer border-none ${
                         viewMode === "code"
                           ? "bg-teal-500/20 text-teal-300"
                           : "bg-transparent text-zinc-400 hover:text-zinc-200"
@@ -953,7 +953,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
                     key={`${file.name}-${idx}`}
                     type="button"
                     onClick={() => setActiveFileIndex(idx)}
-                    className={`px-2.5 py-1 rounded-md text-[11.5px] font-mono cursor-pointer border transition-colors whitespace-nowrap ${
+                    className={`px-2.5 py-1 rounded-md text-[12.5px] font-mono cursor-pointer border transition-colors whitespace-nowrap ${
                       isActive
                         ? "bg-teal-500/15 border-teal-500/30 text-teal-300"
                         : "bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.05]"
@@ -979,8 +979,8 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
                       margin: 0,
                       padding: "16px",
                       background: "transparent",
-                      fontSize: "12.5px",
-                      lineHeight: "1.55",
+                      fontSize: "13.5px",
+                      lineHeight: "1.6",
                     }}
                     codeTagProps={{
                       style: { background: "transparent" },
@@ -1005,10 +1005,10 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
                 <div className="w-11 h-11 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mb-3.5 shadow-[0_0_20px_-5px_rgba(45,212,191,0.3)]">
                   <Sparkles size={18} className="text-teal-300" />
                 </div>
-                <h3 className="text-[14px] font-semibold text-zinc-200 tracking-tight">
+                <h3 className="text-[15px] font-semibold text-zinc-200 tracking-tight">
                   No Active Artifact
                 </h3>
-                <p className="text-[12px] text-zinc-500 mt-1.5 leading-relaxed max-w-[240px]">
+                <p className="text-[13px] text-zinc-500 mt-1.5 leading-relaxed max-w-[240px]">
                   Generated code snippets, documents, and live previews from Lumina will appear here.
                 </p>
               </div>

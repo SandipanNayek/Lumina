@@ -162,7 +162,7 @@ function ChatInput() {
   const canSend = (value.trim().length > 0 || Boolean(selectedFile)) && !isLoading
 
   return (
-    <div className="w-full shrink-0 px-3 sm:px-6 pb-4 pt-2 bg-[#07090e] select-none">
+    <div className="w-full shrink-0 px-3 sm:px-6 pb-4 pt-2 bg-[#07090e] select-none antialiased">
       <div className="max-w-3xl mx-auto flex flex-col gap-2.5 bg-[#0b0e15] border border-white/[0.08] focus-within:border-teal-500/40 focus-within:shadow-[0_0_24px_-6px_rgba(45,212,191,0.18)] rounded-2xl px-3.5 pt-3 pb-2.5 transition-all duration-200">
         <div className="flex items-center gap-1.5 flex-wrap">
           {agents.map((agent) => {
@@ -172,7 +172,7 @@ function ChatInput() {
               <div
                 key={agent.id}
                 onClick={() => setSelectedAgent(agent.label)}
-                className={`shrink-0 cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11.5px] font-medium border transition-all duration-150 ${
+                className={`shrink-0 cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12.5px] font-medium border transition-all duration-150 ${
                   isActive
                     ? "bg-teal-500/15 border-teal-400/35 text-teal-300 shadow-[0_0_12px_-3px_rgba(45,212,191,0.3)]"
                     : "bg-white/[0.02] text-zinc-400 border-white/[0.06] hover:bg-white/[0.05] hover:text-zinc-200"
@@ -203,10 +203,10 @@ function ChatInput() {
               )}
 
               <div className="min-w-0 max-w-[200px]">
-                <p className="text-[12px] font-medium text-zinc-100 truncate">
+                <p className="text-[13px] font-medium text-zinc-100 truncate">
                   {selectedFile?.name}
                 </p>
-                <p className="text-[10px] text-zinc-500">
+                <p className="text-[11px] text-zinc-500">
                   {Math.max(1, Math.ceil(selectedFile.size / 1024))} KB
                 </p>
               </div>
@@ -231,7 +231,7 @@ function ChatInput() {
           onKeyDown={handleKeyDown}
           value={value}
           disabled={isLoading}
-          className="w-full bg-transparent outline-none resize-none text-[14px] text-zinc-100 placeholder:text-zinc-600 leading-relaxed [scrollbar-width:none] [&::-webkit-scrollbar]:hidden disabled:opacity-50 select-text"
+          className="w-full bg-transparent outline-none resize-none text-[15px] text-zinc-100 placeholder:text-zinc-600 leading-[1.6] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden disabled:opacity-50 select-text"
           rows={2}
         />
 
@@ -272,7 +272,7 @@ function ChatInput() {
           </div>
 
           <div className="flex items-center gap-2.5">
-            <span className="hidden sm:inline text-[10.5px] text-zinc-600">
+            <span className="hidden sm:inline text-[11.5px] text-zinc-600">
               Enter to send
             </span>
 

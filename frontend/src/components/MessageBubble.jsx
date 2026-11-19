@@ -30,16 +30,16 @@ function EnhancedCodeBlock({ language, codeText }) {
   }
 
   return (
-    <div className="my-3 rounded-xl bg-[#0d0f14] border border-white/[0.08] overflow-hidden shadow-lg">
+    <div className="my-3 rounded-xl bg-[#0d0f14] border border-white/[0.08] overflow-hidden shadow-lg antialiased">
       <div className="flex items-center justify-between px-4 py-2 bg-white/[0.03] border-b border-white/[0.06]">
-        <span className="text-[11px] font-mono text-zinc-400 lowercase select-none">
+        <span className="text-[12px] font-mono text-zinc-400 lowercase select-none">
           {language}
         </span>
         <button
           type="button"
           onClick={handleCopyCode}
           title="Copy code"
-          className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] text-zinc-400 hover:text-teal-300 hover:bg-white/[0.05] bg-transparent border-none cursor-pointer transition-colors"
+          className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[12px] text-zinc-400 hover:text-teal-300 hover:bg-white/[0.05] bg-transparent border-none cursor-pointer transition-colors"
         >
           {copied ? (
             <>
@@ -61,12 +61,11 @@ function EnhancedCodeBlock({ language, codeText }) {
         customStyle={{
           margin: 0,
           padding: "16px",
-          background: "transparent", // Removes the ash/grey background from the outer <pre> wrapper
-          fontSize: "13px",
-          lineHeight: "1.5",
+          background: "transparent",
+          fontSize: "14px",
+          lineHeight: "1.6",
         }}
         codeTagProps={{
-          // Removes the ash/grey background from the inner <code> wrapper that applies to every line
           style: { background: "transparent" }
         }}
         wrapLongLines={true}
@@ -109,7 +108,7 @@ function MessageBubble({ role, content, images = [], artifacts = [], onOpenArtif
 
   const lightboxUI = lightBox && (
     <div 
-      className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-6" 
+      className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-6 antialiased" 
       onClick={() => setLightBox(null)}
     >
       <div className="absolute top-5 right-5 flex items-center gap-3">
@@ -118,7 +117,7 @@ function MessageBubble({ role, content, images = [], artifacts = [], onOpenArtif
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full px-4 py-2 text-sm font-medium transition-all"
+          className="flex items-center gap-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full px-4 py-2 text-[15px] font-medium transition-all"
           title="Open original image in new tab"
         >
           Open Link <ExternalLink size={16} />
@@ -146,7 +145,7 @@ function MessageBubble({ role, content, images = [], artifacts = [], onOpenArtif
   if (isUser) {
     return (
       <>
-        <div className="flex items-start justify-end gap-3">
+        <div className="flex items-start justify-end gap-3 antialiased">
           <div className="flex flex-col items-end gap-2 max-w-[82%] sm:max-w-[75%]">
             {safeImages.length > 0 && (
               <div className="flex flex-wrap justify-end gap-2">
@@ -163,7 +162,7 @@ function MessageBubble({ role, content, images = [], artifacts = [], onOpenArtif
             )}
 
             {content && (
-              <div className="px-4 py-3 rounded-2xl rounded-tr-sm bg-linear-to-br from-teal-500/20 to-cyan-500/10 border border-teal-500/25 text-[14px] text-zinc-100 leading-relaxed whitespace-pre-wrap break-words shadow-[0_4px_20px_-6px_rgba(45,212,191,0.15)]">
+              <div className="px-4 py-3 rounded-2xl rounded-tr-sm bg-linear-to-br from-teal-500/20 to-cyan-500/10 border border-teal-500/25 text-[15px] text-zinc-100 leading-[1.65] whitespace-pre-wrap break-words shadow-[0_4px_20px_-6px_rgba(45,212,191,0.15)]">
                 {content}
               </div>
             )}
@@ -192,7 +191,7 @@ function MessageBubble({ role, content, images = [], artifacts = [], onOpenArtif
 
   return (
     <>
-      <div className="group flex items-start gap-3">
+      <div className="group flex items-start gap-3 antialiased">
         <div className="shrink-0 mt-0.5 w-7 h-7 rounded-lg bg-teal-500/10 border border-teal-500/25 flex items-center justify-center shadow-[0_0_12px_-3px_rgba(45,212,191,0.3)]">
           <Sparkles size={13} className="text-teal-300" />
         </div>
@@ -212,7 +211,7 @@ function MessageBubble({ role, content, images = [], artifacts = [], onOpenArtif
             </div>
           )}
 
-          <div className="text-[14px] text-zinc-200 leading-relaxed break-words space-y-3">
+          <div className="text-[15px] text-zinc-200 leading-[1.65] break-words space-y-3">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw]}
@@ -220,7 +219,7 @@ function MessageBubble({ role, content, images = [], artifacts = [], onOpenArtif
                 strong: ({ children }) => (
                   <strong className="font-semibold text-zinc-100">{children}</strong>
                 ),
-                p: ({ children }) => <p className="leading-relaxed">{children}</p>,
+                p: ({ children }) => <p className="leading-[1.65]">{children}</p>,
                 a: ({ href, children }) => (
                   <a
                     href={href}
@@ -240,7 +239,7 @@ function MessageBubble({ role, content, images = [], artifacts = [], onOpenArtif
                 ),
                 table: ({ children }) => (
                   <div className="overflow-x-auto my-2 rounded-xl border border-white/[0.08] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <table className="w-full text-left border-collapse text-[13px]">
+                    <table className="w-full text-left border-collapse text-[14px]">
                       {children}
                     </table>
                   </div>
@@ -282,7 +281,7 @@ function MessageBubble({ role, content, images = [], artifacts = [], onOpenArtif
 
                   return (
                     <code
-                      className="px-1.5 py-0.5 rounded bg-white/[0.07] text-teal-300 text-[12.5px] font-mono"
+                      className="px-1.5 py-0.5 rounded bg-white/[0.07] text-teal-300 text-[13.5px] font-mono"
                       {...props}
                     >
                       {children}
@@ -306,10 +305,10 @@ function MessageBubble({ role, content, images = [], artifacts = [], onOpenArtif
                 >
                   <FileCode2 size={15} className="text-teal-300 shrink-0" />
                   <div className="min-w-0">
-                    <div className="text-[12.5px] font-medium text-zinc-100 truncate">
+                    <div className="text-[13.5px] font-medium text-zinc-100 truncate">
                       {art.title || "Generated Artifact"}
                     </div>
-                    <div className="text-[10.5px] text-teal-300/80">
+                    <div className="text-[11.5px] text-teal-300/80">
                       {art.type || "Click to open in Workspace"}
                     </div>
                   </div>
@@ -325,7 +324,7 @@ function MessageBubble({ role, content, images = [], artifacts = [], onOpenArtif
                 type="button"
                 onClick={handleCopy}
                 title="Copy response"
-                className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] text-zinc-500 hover:text-teal-300 hover:bg-white/[0.04] bg-transparent border-none cursor-pointer transition-colors"
+                className="flex items-center gap-1 px-2 py-1 rounded-md text-[12px] text-zinc-500 hover:text-teal-300 hover:bg-white/[0.04] bg-transparent border-none cursor-pointer transition-colors"
               >
                 {copied ? (
                   <>
