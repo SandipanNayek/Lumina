@@ -53,7 +53,7 @@ ${state.prompt}`
 
     return {
       ...state,
-      aiResponse: `# Presentation Generated
+      aiResponse: `### ✅ Presentation Generated
 
 ## **${data.title}**
 

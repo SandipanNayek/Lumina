@@ -43,7 +43,7 @@ ${state.prompt}`
 
         return {
           ...state,
-          aiResponse:`# PDF Generated
+          aiResponse:`# ✅  PDF Generated
 
 ## **${data.title}**
 
