@@ -59,12 +59,11 @@ function Home() {
         onSelectArtifact={handleSelectArtifact}
       />
 
-      {artifactOpen && (
-        <Artifact
-          artifact={selectedArtifact}
-          onClose={() => setArtifactOpen(false)}
-        />
-      )}
+      <Artifact
+        artifact={selectedArtifact}
+        isOpen={artifactOpen}
+        onClose={() => setArtifactOpen(false)}
+      />
 
       {!userData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur">

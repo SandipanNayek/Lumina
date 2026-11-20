@@ -34,7 +34,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
   const [viewMode, setViewMode] = useState("code")
   const [copied, setCopied] = useState(false)
   const [prevArtifactId, setPrevArtifactId] = useState(artifact?.id)
-  const [isReady, setIsReady] = useState(!isOpen)
+  const [hasEntered, setHasEntered] = useState(!isOpen)
   const [isClosing, setIsClosing] = useState(false)
   const closeTimerRef = useRef(null)
 
@@ -49,16 +49,21 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
   }
 
   useEffect(() => {
-    let frame1
-    let frame2
-    frame1 = requestAnimationFrame(() => {
-      frame2 = requestAnimationFrame(() => {
-        setIsReady(true)
-      })
+    if (hasEntered) return
+    let timer
+    const frame = requestAnimationFrame(() => {
+      timer = setTimeout(() => {
+        setHasEntered(true)
+      }, 16)
     })
     return () => {
-      cancelAnimationFrame(frame1)
-      cancelAnimationFrame(frame2)
+      cancelAnimationFrame(frame)
+      if (timer) clearTimeout(timer)
+    }
+  }, [hasEntered])
+
+  useEffect(() => {
+    return () => {
       if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
     }
   }, [])
@@ -80,7 +85,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
     }, 320)
   }
 
-  const visible = isOpen && isReady && !isClosing
+  const visible = isOpen && hasEntered && !isClosing
 
   const files = useMemo(() => {
     if (!artifact) return []
@@ -970,24 +975,26 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
             {artifact && files.length > 0 ? (
               viewMode === "code" ? (
                 <div className="flex-1 rounded-xl bg-[#0b0e15] border border-white/[0.06] overflow-auto select-text [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  <SyntaxHighlighter
-                    language={currentLang}
-                    style={oneDark}
-                    showLineNumbers
-                    wrapLongLines
-                    customStyle={{
-                      margin: 0,
-                      padding: "16px",
-                      background: "transparent",
-                      fontSize: "13.5px",
-                      lineHeight: "1.6",
-                    }}
-                    codeTagProps={{
-                      style: { background: "transparent" },
-                    }}
-                  >
-                    {currentCode}
-                  </SyntaxHighlighter>
+                  {hasEntered && (
+                    <SyntaxHighlighter
+                      language={currentLang}
+                      style={oneDark}
+                      showLineNumbers
+                      wrapLongLines
+                      customStyle={{
+                        margin: 0,
+                        padding: "16px",
+                        background: "transparent",
+                        fontSize: "13.5px",
+                        lineHeight: "1.6",
+                      }}
+                      codeTagProps={{
+                        style: { background: "transparent" },
+                      }}
+                    >
+                      {currentCode}
+                    </SyntaxHighlighter>
+                  )}
                 </div>
               ) : (
                 <div className="flex-1 rounded-xl bg-[#0b0e15] border border-white/[0.06] overflow-hidden flex flex-col relative">

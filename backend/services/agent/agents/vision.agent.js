@@ -3,6 +3,7 @@ import axios from "axios"
 import { uploadToS3 } from "../utils/uploadToS3.js"
 import { getFromS3 } from "../utils/getFromS3.js"
 
+
 export const visionAgent = async (state) => {
     try {
         const apiKey = process.env.POLLINATIONS_API_KEY?.replace(/^["']|["']$/g, "").trim()
@@ -41,7 +42,7 @@ ${state.prompt}
 
         await uploadToS3(filename, buffer, "image/png")
 
-        const downloadUrl = await getFromS3(filename)
+        const downloadUrl = await getFromS3(filename , 24*60*60)
 
         return {
             ...state,
@@ -50,7 +51,7 @@ ${state.prompt}
 
 📥 [Download Image](${downloadUrl})
 
-⏳ Link expires in 10 minutes.`
+⏳ Link expires in 1 Day.`
         }
     } catch (error) {
         console.log(error?.response?.data ? Buffer.from(error.response.data).toString() : error)
