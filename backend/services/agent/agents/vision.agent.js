@@ -2,6 +2,7 @@ import { getModel } from "../config/llmmodel.js"
 import axios from "axios"
 import { uploadToS3 } from "../utils/uploadToS3.js"
 import { getFromS3 } from "../utils/getFromS3.js"
+import { deductCredits } from "../utils/deductCredits.js"
 const IMAGE_MODEL = "tongyi-mai/z-image-turbo"
 
 export const visionAgent = async (state) => {
@@ -37,6 +38,7 @@ ${state.prompt}
                 Authorization: `Bearer ${apiKey}`,
             },
         })
+        await deductCredits(state.userId , "vision")
 
         const buffer = Buffer.from(imageRes.data)
         const filename = `image-${Date.now()}.png`

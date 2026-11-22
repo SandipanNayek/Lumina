@@ -1,4 +1,5 @@
 import { getModel } from "../config/llmmodel.js";
+import { deductCredits } from "../utils/deductCredits.js";
 
 const unescapeJsonString = (str = "") =>
   str
@@ -148,6 +149,7 @@ User Request:
 ${state.prompt}`;
 
       const res = await llm.invoke(prompt);
+      await deductCredits(state.userId , "coding")
       const rawContent = typeof res.content === "string" ? res.content : "";
       const files = extractProjectFiles(rawContent);
 
@@ -181,6 +183,7 @@ Use clear headings (# Overview, ## Implementation, ## Explanation, ## Complexity
 
 User Request:
 ${state.prompt}`);
+await deductCredits(state.userId , "coding")
 
     return {
       ...state,

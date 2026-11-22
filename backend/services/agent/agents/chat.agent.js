@@ -1,6 +1,7 @@
 import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { getModel } from "../config/llmmodel.js";
 import { getMemory } from "../config/memory.js";
+import { deductCredits } from "../utils/deductCredits.js";
 
 const isValidImageUrl = (url) => {
   if (typeof url !== "string") return false;
@@ -113,6 +114,8 @@ export const chatAgent = async (state) => {
   const rawHistory = await getMemory(state.conversationId);
   const history = Array.isArray(rawHistory) ? rawHistory.slice(-6) : [];
 
+  
+
   const currentDateTime = new Date().toLocaleString("en-IN", {
     timeZone: "Asia/Kolkata",
     weekday: "long",
@@ -183,6 +186,7 @@ ${imageInstruction}
   }
 
   const response = await llm.invoke(messages);
+  await deductCredits(state.userId , "chat")
   const rawContent =
     typeof response.content === "string"
       ? response.content

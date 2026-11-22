@@ -1,4 +1,5 @@
 import { getModel } from "../config/llmmodel.js"
+import { deductCredits } from "../utils/deductCredits.js"
 import { generatePpt } from "../utils/generatePpt.js"
 import { getFromS3 } from "../utils/getFromS3.js"
 import { uploadToS3 } from "../utils/uploadToS3.js"
@@ -45,6 +46,7 @@ ${state.prompt}`
       .trim()
 
     const data = JSON.parse(raw)
+    await deductCredits(state.userId , "ppt")
     const pptBuffer = await generatePpt(data)
     const filename = `ppt-${Date.now()}.pptx`
 

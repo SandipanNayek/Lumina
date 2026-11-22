@@ -1,4 +1,5 @@
 import { searchTool } from "../config/tavily.js";
+import { deductCredits } from "../utils/deductCredits.js";
 
 const BLOCKED_IMAGE_PATTERNS = [
   /token=/i,
@@ -67,6 +68,7 @@ export const searchAgent = async (state) => {
     ].slice(0, 10);
 
     const verifiedImages = (await filterReachableImages(candidateUrls)).slice(0, 6);
+    await deductCredits(state.userId , "search")
 
     return {
       ...state,

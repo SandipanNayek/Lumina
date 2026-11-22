@@ -17,6 +17,8 @@ export const agent = async (req, res) => {
       },
     };
 
+    const userId = req.headers["x-user-id"]
+
     await axios.post(
       `${process.env.CHAT_SERVICE}/save-message`,
       {
@@ -31,6 +33,7 @@ export const agent = async (req, res) => {
       prompt,
       conversationId,
       agent: selectedAgent,
+      userId
     });
 
     const rawResponse =
