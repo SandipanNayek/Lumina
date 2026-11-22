@@ -27,7 +27,7 @@ Structure:
 ]
 }
 
-Generate 4-8 sections.
+Generate 6-10 sections.
 
 Each section should have 3-6 concise bullet points.
 

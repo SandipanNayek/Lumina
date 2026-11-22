@@ -2,7 +2,7 @@ import { getModel } from "../config/llmmodel.js"
 import axios from "axios"
 import { uploadToS3 } from "../utils/uploadToS3.js"
 import { getFromS3 } from "../utils/getFromS3.js"
-
+const IMAGE_MODEL = "tongyi-mai/z-image-turbo"
 
 export const visionAgent = async (state) => {
     try {
@@ -27,8 +27,9 @@ ${state.prompt}
 `)
 
         const prompt = res.content.trim()
-        const imageUrl = `https://gen.pollinations.ai/image/${encodeURIComponent(prompt)}?model=flux` //const IMAGE_MODEL = "tongyi-mai/z-image-turbo"
+        const imageUrl = `https://gen.pollinations.ai/image/${encodeURIComponent(prompt)}?model=${encodeURIComponent(IMAGE_MODEL)}` //const IMAGE_MODEL = "tongyi-mai/z-image-turbo"
                                                                                                // ${encodeURIComponent(IMAGE_MODEL)}
+                                                                                               // flux
 
         const imageRes = await axios.get(imageUrl, {
             responseType: "arraybuffer",
