@@ -6,7 +6,7 @@ import { addMessage } from "../config/memory.js";
 export const agent = async (req, res) => {
   try {
     const { prompt, conversationId, agent: selectedAgent } = req.body;
-
+    const file = req.file 
     if (!prompt?.trim() || !conversationId) {
       return res.status(400).json({ message: "prompt and conversationId are required" });
     }
@@ -33,7 +33,8 @@ export const agent = async (req, res) => {
       prompt,
       conversationId,
       agent: selectedAgent,
-      userId
+      userId,
+      file
     });
 
     const rawResponse =
