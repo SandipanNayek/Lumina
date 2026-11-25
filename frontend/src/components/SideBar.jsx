@@ -16,7 +16,7 @@ function SideBar() {
     const dispatch = useDispatch()
     const { conversations, selectedConversation } = useSelector(state => state.conversation)
     const { userData } = useSelector(state => state.user)
-    const [showBilling , setShowBilling] = useState(false)
+    const [showBilling, setShowBilling] = useState(false)
 
     useEffect(() => {
         const getConv = async () => {
@@ -28,6 +28,15 @@ function SideBar() {
         }
         getConv()
     }, [dispatch, userData])
+
+    useEffect(() => {
+        if (!mobileOpen || window.innerWidth >= 1024) return
+        const prevOverflow = document.body.style.overflow
+        document.body.style.overflow = "hidden"
+        return () => {
+            document.body.style.overflow = prevOverflow
+        }
+    }, [mobileOpen])
 
     const handleCreateConversation = async () => {
         const data = await createConversation()
@@ -61,7 +70,9 @@ function SideBar() {
     return (
         <>
             <button
-                className={`lg:hidden fixed top-3.5 left-4 z-50 flex items-center justify-center w-8 h-8 rounded-lg bg-[#07090e]/90 backdrop-blur-md border border-white/[0.08] text-zinc-400 hover:text-teal-300 transition-all duration-200 cursor-pointer ${mobileOpen ? "opacity-0 pointer-events-none scale-90" : "opacity-100 pointer-events-auto scale-100"}`}
+                type="button"
+                aria-label="Open sidebar"
+                className={`touch-manipulation lg:hidden fixed top-3.5 left-4 z-50 flex items-center justify-center w-8 h-8 rounded-lg bg-[#07090e]/90 border border-white/[0.08] text-zinc-400 hover:text-teal-300 transition-all duration-200 cursor-pointer ${mobileOpen ? "opacity-0 pointer-events-none scale-90" : "opacity-100 pointer-events-auto scale-100"}`}
                 onClick={() => setMobileOpen(true)}
             >
                 <Menu size={15} />
@@ -69,18 +80,18 @@ function SideBar() {
 
             <div
                 onClick={() => setMobileOpen(false)}
-                className={`lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+                className={`lg:hidden fixed inset-0 z-40 bg-black/65 transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
             />
 
             <aside
-                className={`fixed lg:static inset-y-0 left-0 z-50 h-screen shrink-0 bg-[#07090e] border-r border-white/[0.06] overflow-hidden select-none antialiased will-change-[width,transform] transition-[width,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] w-[275px] ${collapsed ? "lg:w-[60px]" : "lg:w-[275px]"} ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+                className={`fixed lg:static inset-y-0 left-0 z-50 h-dvh lg:h-screen shrink-0 bg-[#07090e] border-r border-white/[0.06] overflow-hidden select-none antialiased transform-gpu transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:transition-[width,translate,transform] w-[275px] ${collapsed ? "lg:w-[60px]" : "lg:w-[275px]"} ${mobileOpen ? "translate-x-0 pointer-events-auto" : "-translate-x-full pointer-events-none lg:translate-x-0 lg:pointer-events-auto"}`}
             >
                 <div className='relative w-full h-full overflow-hidden'>
-                    <div className='pointer-events-none absolute -top-24 -left-24 w-64 h-64 bg-teal-500/[0.07] rounded-full blur-3xl' />
+                    <div className='hidden lg:block pointer-events-none absolute -top-24 -left-24 w-64 h-64 bg-teal-500/[0.07] rounded-full blur-3xl' />
 
                     <div
                         aria-hidden={!collapsed}
-                        className={`hidden lg:flex flex-col items-center w-[60px] h-full py-4 gap-2 absolute inset-y-0 left-0 z-20 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${collapsed ? "opacity-100 translate-x-0 pointer-events-auto" : "opacity-0 -translate-x-2 pointer-events-none"}`}
+                        className={`hidden lg:flex flex-col items-center w-[60px] h-full py-4 gap-2 absolute inset-y-0 left-0 z-20 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${collapsed ? "opacity-100 translate-x-0 pointer-events-auto" : "opacity-0 -translate-x-2 pointer-events-none"}`}
                     >
                         <button
                             className='flex items-center justify-center w-9 h-9 rounded-xl text-zinc-400 hover:text-teal-300 hover:bg-teal-500/10 transition-all duration-200 bg-transparent border-none cursor-pointer'
@@ -133,7 +144,7 @@ function SideBar() {
 
                     <div
                         aria-hidden={collapsed}
-                        className={`flex flex-col w-[275px] h-full relative z-10 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${collapsed ? "lg:opacity-0 lg:translate-x-2 lg:pointer-events-none" : "opacity-100 translate-x-0 pointer-events-auto"}`}
+                        className={`flex flex-col w-[275px] h-full relative z-10 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${collapsed ? "lg:opacity-0 lg:translate-x-2 lg:pointer-events-none" : "opacity-100 translate-x-0 pointer-events-auto"}`}
                     >
                         <div className='flex items-center gap-2.5 px-4 py-4 border-b border-white/[0.05] relative z-10'>
                             <button
@@ -144,8 +155,10 @@ function SideBar() {
                             </button>
 
                             <button
+                                type="button"
+                                aria-label="Close sidebar"
                                 onClick={() => setMobileOpen(false)}
-                                className="lg:hidden flex items-center justify-center w-8 h-8 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.05] transition-colors duration-150 bg-transparent border-none cursor-pointer"
+                                className="touch-manipulation lg:hidden flex items-center justify-center w-8 h-8 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.05] transition-colors duration-150 bg-transparent border-none cursor-pointer"
                             >
                                 <X size={18} />
                             </button>
@@ -162,7 +175,7 @@ function SideBar() {
                             </span>
 
                             <button
-                                className='flex items-center justify-center w-8 h-8 rounded-lg text-zinc-400 hover:text-teal-300 hover:bg-teal-500/10 transition-colors duration-150 bg-transparent border-none cursor-pointer'
+                                className='touch-manipulation flex items-center justify-center w-8 h-8 rounded-lg text-zinc-400 hover:text-teal-300 hover:bg-teal-500/10 transition-colors duration-150 bg-transparent border-none cursor-pointer'
                                 onClick={handleCreateConversation}
                             >
                                 <PenSquare size={16} />
@@ -171,7 +184,7 @@ function SideBar() {
 
                         <div className='px-4 pt-4 pb-2 relative z-10'>
                             <button
-                                className='w-full flex items-center justify-center gap-2 text-[14.5px] font-semibold text-zinc-950 bg-linear-to-r from-teal-400 via-teal-300 to-cyan-400 rounded-xl py-[10px] border-none cursor-pointer shadow-[0_0_20px_-5px_rgba(45,212,191,0.45)] hover:shadow-[0_0_25px_-3px_rgba(45,212,191,0.65)] hover:brightness-105 active:scale-[0.99] transition-all duration-200'
+                                className='touch-manipulation w-full flex items-center justify-center gap-2 text-[14.5px] font-semibold text-zinc-950 bg-linear-to-r from-teal-400 via-teal-300 to-cyan-400 rounded-xl py-[10px] border-none cursor-pointer shadow-[0_0_20px_-5px_rgba(45,212,191,0.45)] hover:shadow-[0_0_25px_-3px_rgba(45,212,191,0.65)] hover:brightness-105 active:scale-[0.99] transition-all duration-200'
                                 onClick={handleNewChat}
                             >
                                 <Plus size={16} strokeWidth={2.5} />
@@ -183,14 +196,14 @@ function SideBar() {
                             {conversations?.length === 0 ? "No Recent Conversations" : "Recents"}
                         </div>
 
-                        <div className='flex-1 overflow-y-auto px-3 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden space-y-0.5 relative z-10'>
+                        <div className='flex-1 overflow-y-auto overscroll-contain px-3 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden space-y-0.5 relative z-10'>
                             {conversations?.map((conv) => {
                                 const isActive = selectedConversation?._id === conv?._id
                                 return (
                                     <div
                                         key={conv._id}
                                         onClick={() => handleSelectConversation(conv)}
-                                        className={`group relative flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-xl border transition-all duration-200
+                                        className={`touch-manipulation group relative flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-xl border transition-colors duration-150
                                         ${isActive
                                             ? "bg-linear-to-r from-teal-500/[0.12] to-cyan-500/[0.04] border-teal-500/25 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]"
                                             : "bg-transparent border-transparent hover:bg-white/[0.03]"}`}
@@ -199,7 +212,7 @@ function SideBar() {
                                             <div className='absolute left-0 top-2.5 bottom-2.5 w-[3px] rounded-r-full bg-teal-400 shadow-[0_0_8px_#2dd4bf]' />
                                         )}
 
-                                        <div className={`flex items-center justify-center shrink-0 w-7 h-7 rounded-lg transition-colors duration-200
+                                        <div className={`flex items-center justify-center shrink-0 w-7 h-7 rounded-lg transition-colors duration-150
                                             ${isActive
                                                 ? "bg-teal-400/15 text-teal-300"
                                                 : "bg-white/[0.04] text-zinc-500 group-hover:text-zinc-300 group-hover:bg-white/[0.06]"}`}
@@ -207,7 +220,7 @@ function SideBar() {
                                             <MessageSquare size={13} />
                                         </div>
 
-                                        <span className={`text-[14px] truncate transition-colors duration-200 ${isActive ? "font-semibold text-white" : "font-medium text-zinc-400 group-hover:text-zinc-200"}`}>
+                                        <span className={`text-[14px] truncate transition-colors duration-150 ${isActive ? "font-semibold text-white" : "font-medium text-zinc-400 group-hover:text-zinc-200"}`}>
                                             {conv?.title || "New Chat"}
                                         </span>
                                     </div>
@@ -218,7 +231,7 @@ function SideBar() {
                         <div className='mx-3 h-px bg-linear-to-r from-transparent via-white/[0.07] to-transparent' />
                         <div className='p-3 relative z-10'>
                             {userData ? (
-                                <div className='flex items-center gap-3 rounded-xl px-3 py-2.5 bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.09] transition-all duration-200'>
+                                <div className='flex items-center gap-3 rounded-xl px-3 py-2.5 bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.09] transition-colors duration-150'>
                                     <div className='relative shrink-0'>
                                         {(userImage && !imageError) ?
                                             <img
@@ -246,15 +259,15 @@ function SideBar() {
 
                                     <div className='flex items-center gap-1'>
                                         <button
-                                        onClick={() => setShowBilling(true)}
+                                            onClick={() => setShowBilling(true)}
                                             title="Credits & Billing"
-                                            className='flex items-center justify-center w-7 h-7 rounded-lg border-none bg-transparent text-amber-400/80 cursor-pointer hover:bg-amber-500/15 hover:text-amber-300 transition-all duration-150'
+                                            className='touch-manipulation flex items-center justify-center w-7 h-7 rounded-lg border-none bg-transparent text-amber-400/80 cursor-pointer hover:bg-amber-500/15 hover:text-amber-300 transition-colors duration-150'
                                         >
                                             <Coins size={16} />
                                         </button>
                                         <button
                                             title="Log Out"
-                                            className='flex items-center justify-center w-7 h-7 rounded-lg border-none bg-transparent text-zinc-500 cursor-pointer hover:bg-rose-500/15 hover:text-rose-400 transition-all duration-150'
+                                            className='touch-manipulation flex items-center justify-center w-7 h-7 rounded-lg border-none bg-transparent text-zinc-500 cursor-pointer hover:bg-rose-500/15 hover:text-rose-400 transition-colors duration-150'
                                             onClick={handleLogout}
                                         >
                                             <LogOut size={15} />
@@ -262,15 +275,13 @@ function SideBar() {
                                     </div>
                                 </div>
                             ) : (
-                                <button className='w-full flex items-center justify-center gap-2 text-[15px] font-medium text-zinc-200 bg-white/[0.04] border border-white/[0.08] rounded-xl py-[11px] cursor-pointer hover:bg-teal-500/10 hover:border-teal-500/30 hover:text-teal-200 transition-all duration-200'>
+                                <button className='touch-manipulation w-full flex items-center justify-center gap-2 text-[15px] font-medium text-zinc-200 bg-white/[0.04] border border-white/[0.08] rounded-xl py-[11px] cursor-pointer hover:bg-teal-500/10 hover:border-teal-500/30 hover:text-teal-200 transition-colors duration-150'>
                                     Login
                                 </button>
                             )}
                         </div>
                     </div>
-                    
                 </div>
-                
             </aside>
             <BillingDrawer
                 open={showBilling}

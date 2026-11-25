@@ -34,13 +34,10 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
   const [viewMode, setViewMode] = useState("code")
   const [copied, setCopied] = useState(false)
   const [prevArtifactId, setPrevArtifactId] = useState(artifact?.id)
-  const [hasEntered, setHasEntered] = useState(!isOpen)
+  const [mounted, setMounted] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
+  const [isSlideSettled, setIsSlideSettled] = useState(false)
   const closeTimerRef = useRef(null)
-
-  if (!isOpen && isClosing) {
-    setIsClosing(false)
-  }
 
   if (artifact?.id !== prevArtifactId) {
     setPrevArtifactId(artifact?.id)
@@ -49,18 +46,11 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
   }
 
   useEffect(() => {
-    if (hasEntered) return
-    let timer
     const frame = requestAnimationFrame(() => {
-      timer = setTimeout(() => {
-        setHasEntered(true)
-      }, 16)
+      setMounted(true)
     })
-    return () => {
-      cancelAnimationFrame(frame)
-      if (timer) clearTimeout(timer)
-    }
-  }, [hasEntered])
+    return () => cancelAnimationFrame(frame)
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -69,12 +59,39 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
   }, [])
 
   useEffect(() => {
-    if (isOpen && closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current)
-      closeTimerRef.current = null
+    if (isOpen) {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current)
+        closeTimerRef.current = null
+      }
       setIsClosing(false)
+    } else {
+      setIsClosing(false)
+      setIsSlideSettled(false)
     }
   }, [isOpen])
+
+  const visible = isOpen && mounted && !isClosing
+
+  useEffect(() => {
+    if (!visible) {
+      setIsSlideSettled(false)
+      return
+    }
+    const timer = setTimeout(() => {
+      setIsSlideSettled(true)
+    }, 310)
+    return () => clearTimeout(timer)
+  }, [visible])
+
+  useEffect(() => {
+    if (!visible || window.innerWidth >= 1024) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = prevOverflow
+    }
+  }, [visible])
 
   const handleClose = () => {
     if (!onClose || isClosing) return
@@ -82,10 +99,8 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
     closeTimerRef.current = setTimeout(() => {
       closeTimerRef.current = null
       onClose()
-    }, 320)
+    }, 300)
   }
-
-  const visible = isOpen && hasEntered && !isClosing
 
   const files = useMemo(() => {
     if (!artifact) return []
@@ -856,21 +871,21 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
     <>
       <div
         onClick={handleClose}
-        className={`lg:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-xs transition-opacity duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`lg:hidden fixed inset-0 z-30 bg-black/65 transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           visible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
       />
 
       <aside
         aria-hidden={!visible}
-        className={`fixed inset-y-0 right-0 z-40 lg:static lg:z-auto shrink-0 h-full bg-[#07090e] text-zinc-100 select-none antialiased overflow-hidden transform-gpu will-change-[width,transform,opacity] transition-[width,transform,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`fixed inset-y-0 right-0 z-40 lg:static lg:z-auto shrink-0 h-dvh lg:h-full bg-[#07090e] text-zinc-100 select-none antialiased overflow-hidden transform-gpu transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:transition-[width,translate,transform,opacity] ${
           visible
             ? "w-full lg:w-[420px] xl:w-[480px] opacity-100 translate-x-0 border-l border-white/[0.06] pointer-events-auto"
-            : "w-full lg:w-0 opacity-0 translate-x-full lg:translate-x-0 border-l-0 pointer-events-none"
+            : "w-full lg:w-0 opacity-100 lg:opacity-0 translate-x-full lg:translate-x-0 border-l-0 pointer-events-none"
         }`}
       >
         <div
-          className={`w-full lg:w-[420px] xl:w-[480px] h-full flex flex-col shrink-0 transform-gpu transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`w-full lg:w-[420px] xl:w-[480px] h-full flex flex-col shrink-0 transform-gpu transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
             visible ? "translate-x-0 opacity-100" : "lg:translate-x-6 lg:opacity-0"
           }`}
         >
@@ -896,7 +911,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
                     <button
                       onClick={() => setViewMode("preview")}
                       title="Preview"
-                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-[12px] font-medium transition-all cursor-pointer border-none ${
+                      className={`touch-manipulation flex items-center gap-1 px-2 py-1 rounded-md text-[12px] font-medium transition-colors cursor-pointer border-none ${
                         viewMode === "preview"
                           ? "bg-teal-500/20 text-teal-300"
                           : "bg-transparent text-zinc-400 hover:text-zinc-200"
@@ -908,7 +923,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
                     <button
                       onClick={() => setViewMode("code")}
                       title="Code"
-                      className={`flex items-center gap-1 px-2 py-1 rounded-md text-[12px] font-medium transition-all cursor-pointer border-none ${
+                      className={`touch-manipulation flex items-center gap-1 px-2 py-1 rounded-md text-[12px] font-medium transition-colors cursor-pointer border-none ${
                         viewMode === "code"
                           ? "bg-teal-500/20 text-teal-300"
                           : "bg-transparent text-zinc-400 hover:text-zinc-200"
@@ -922,7 +937,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
                   <button
                     onClick={handleCopy}
                     title="Copy content"
-                    className="flex items-center justify-center w-7 h-7 rounded-lg bg-transparent border-none text-zinc-400 hover:text-teal-300 hover:bg-white/[0.05] transition-colors cursor-pointer"
+                    className="touch-manipulation flex items-center justify-center w-7 h-7 rounded-lg bg-transparent border-none text-zinc-400 hover:text-teal-300 hover:bg-white/[0.05] transition-colors cursor-pointer"
                   >
                     {copied ? <Check size={14} className="text-teal-400" /> : <Copy size={14} />}
                   </button>
@@ -930,7 +945,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
                   <button
                     onClick={handleDownload}
                     title="Download file"
-                    className="flex items-center justify-center w-7 h-7 rounded-lg bg-transparent border-none text-zinc-400 hover:text-teal-300 hover:bg-white/[0.05] transition-colors cursor-pointer"
+                    className="touch-manipulation flex items-center justify-center w-7 h-7 rounded-lg bg-transparent border-none text-zinc-400 hover:text-teal-300 hover:bg-white/[0.05] transition-colors cursor-pointer"
                   >
                     <Download size={14} />
                   </button>
@@ -941,7 +956,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
                 <button
                   onClick={handleClose}
                   title="Close panel"
-                  className="flex items-center justify-center w-7 h-7 rounded-lg bg-transparent border-none text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                  className="touch-manipulation flex items-center justify-center w-7 h-7 rounded-lg bg-transparent border-none text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
                 >
                   <X size={14} />
                 </button>
@@ -958,7 +973,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
                     key={`${file.name}-${idx}`}
                     type="button"
                     onClick={() => setActiveFileIndex(idx)}
-                    className={`px-2.5 py-1 rounded-md text-[12.5px] font-mono cursor-pointer border transition-colors whitespace-nowrap ${
+                    className={`touch-manipulation px-2.5 py-1 rounded-md text-[12.5px] font-mono cursor-pointer border transition-colors whitespace-nowrap ${
                       isActive
                         ? "bg-teal-500/15 border-teal-500/30 text-teal-300"
                         : "bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.05]"
@@ -974,8 +989,8 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
           <div className="flex-1 p-4 flex flex-col relative overflow-hidden">
             {artifact && files.length > 0 ? (
               viewMode === "code" ? (
-                <div className="flex-1 rounded-xl bg-[#0b0e15] border border-white/[0.06] overflow-auto select-text [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  {hasEntered && (
+                <div className="flex-1 rounded-xl bg-[#0b0e15] border border-white/[0.06] overflow-auto overscroll-contain select-text [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  {isSlideSettled ? (
                     <SyntaxHighlighter
                       language={currentLang}
                       style={oneDark}
@@ -994,6 +1009,10 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
                     >
                       {currentCode}
                     </SyntaxHighlighter>
+                  ) : (
+                    <pre className="m-0 p-4 font-mono text-[13.5px] leading-[1.6] text-zinc-200 whitespace-pre-wrap break-words">
+                      {currentCode}
+                    </pre>
                   )}
                 </div>
               ) : (
@@ -1008,7 +1027,7 @@ function Artifact({ artifact: propArtifact, isOpen = true, onClose }) {
               )
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-center px-6 relative">
-                <div className="pointer-events-none absolute w-48 h-48 bg-teal-500/[0.05] rounded-full blur-3xl" />
+                <div className="hidden lg:block pointer-events-none absolute w-48 h-48 bg-teal-500/[0.05] rounded-full blur-3xl" />
                 <div className="w-11 h-11 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mb-3.5 shadow-[0_0_20px_-5px_rgba(45,212,191,0.3)]">
                   <Sparkles size={18} className="text-teal-300" />
                 </div>

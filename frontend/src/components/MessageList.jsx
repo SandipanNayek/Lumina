@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { Sparkles } from 'lucide-react'
 import MessageBubble from './MessageBubble'
 
-function MessageList({ onOpenArtifact }) {
+function MessageList({ onOpenArtifact, onRegenerate }) {
   const messages = useSelector((state) => state.message?.messages) ?? []
   const isLoading = useSelector((state) => state.message?.isLoading) ?? false
   const bottomRef = useRef(null)
@@ -29,13 +29,27 @@ function MessageList({ onOpenArtifact }) {
   return (
     <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-5 antialiased">
       <div className="max-w-3xl mx-auto flex flex-col gap-5">
-        {messages.map((msg, idx) => (
-          <MessageBubble
-            key={msg._id || idx}
-            {...msg}
-            onOpenArtifact={onOpenArtifact}
-          />
-        ))}
+        {messages.map((msg, idx) => {
+          let previousUserPrompt = ""
+          if (msg.role !== "user") {
+            for (let i = idx - 1; i >= 0; i--) {
+              if (messages[i]?.role === "user" && messages[i]?.content) {
+                previousUserPrompt = messages[i].content
+                break
+              }
+            }
+          }
+
+          return (
+            <MessageBubble
+              key={msg._id || idx}
+              {...msg}
+              previousUserPrompt={previousUserPrompt}
+              onOpenArtifact={onOpenArtifact}
+              onRegenerate={onRegenerate}
+            />
+          )
+        })}
 
         {isLoading && (
           <div className="flex items-start gap-3">
