@@ -9,6 +9,7 @@
 ![Docker](https://img.shields.io/badge/Containerized-Docker-2496ED?logo=docker&logoColor=white)
 
 Lumina is a distributed, microservices-based AI orchestration platform built with **LangGraph**, **Node.js**, **React**, **Redis**, **Qdrant**, and **Google Gemini**. Instead of routing every prompt through a single generic LLM call, Lumina dynamically classifies user intent and uploaded media (PDFs and images) across specialized agents—complete with distributed per-agent rate limiting, credit-based billing, vector-backed RAG, ephemeral S3 document generation, and fault-tolerant model fallbacks.
+
 ---
 
 ## Table of Contents
@@ -30,28 +31,28 @@ Lumina decouples authentication, conversation persistence, billing, and AI execu
 
 ```mermaid
 flowchart LR
-    Client["React + Redux Client\n(Voice, Markdown, Artifacts, Live Timers)"]
-    GW["API Gateway (:8000)\nJWT/Cookie Auth • Streaming Proxy • Header Injection"]
+    Client["React + Redux Client<br/>(Voice, Markdown, Artifacts, Live Timers)"]
+    GW["API Gateway (:8000)<br/>JWT/Cookie Auth • Streaming Proxy • Header Injection"]
 
-    Auth["Auth Service\nUsers & Sessions"]
-    Chat["Chat Service\nConversations & History"]
-    Billing["Billing Service\nCredits & Quotas"]
-    Agent["Agent Service (:8003)\nMulter • LangGraph Engine"]
+    Auth["Auth Service<br/>Users & Sessions"]
+    Chat["Chat Service<br/>Conversations & History"]
+    Billing["Billing Service<br/>Credits & Quotas"]
+    Agent["Agent Service (:8003)<br/>Multer • LangGraph Engine"]
 
-    Router{"LangGraph Router\n(Intent + File Detection)"}
-    Nodes["Specialized Agents\nChat | Coding | Search | Vision\nPDF Gen | PPT Gen | PDF RAG | Image Analyzer"]
+    Router{"LangGraph Router<br/>(Intent + File Detection)"}
+    Nodes["Specialized Agents<br/>Chat | Coding | Search | Vision<br/>PDF Gen | PPT Gen | PDF RAG | Image Analyzer"]
 
-    Redis[("Redis\nRate Limits (TTL)\nShort-Term Memory")]
-    Qdrant[("Qdrant\nPDF Vector Embeddings")]
-    Mongo[("MongoDB\nUsers, Chats, Ledger")]
-    S3[("AWS S3\n24h Presigned Files")]
-    LLM["Google Gemini API\n(Primary + Fallback)"]
+    Redis[("Redis<br/>Rate Limits (TTL)<br/>Short-Term Memory")]
+    Qdrant[("Qdrant<br/>PDF Vector Embeddings")]
+    Mongo[("MongoDB<br/>Users, Chats, Ledger")]
+    S3[("AWS S3<br/>24h Presigned Files")]
+    LLM["Google Gemini API<br/>(Primary + Fallback)"]
 
     Client --> GW
     GW --> Auth
     GW --> Chat
     GW --> Billing
-    GW -- "parseReqBody: false\n(Streaming Multipart)" --> Agent
+    GW -- "parseReqBody: false<br/>(Streaming Multipart)" --> Agent
 
     Agent --> Router --> Nodes
     Nodes --> Redis
@@ -272,12 +273,7 @@ cd frontend && npm install && npm run dev
 
 ## Design Trade-offs & Future Roadmap
 
-- **Fixed-Window vs. Sliding-Window Rate Limiting:** Currently uses Redis `INCR` + `EXPIRE` for $O(1)$ simplicity and minimal overhead. Planned upgrade: atomic Redis Lua script implementing a sliding window log to eliminate boundary burst spikes.
+- **Fixed-Window vs. Sliding-Window Rate Limiting:** Currently uses Redis `INCR` + `EXPIRE` for `O(1)` simplicity and minimal overhead. Planned upgrade: atomic Redis Lua script implementing a sliding window log to eliminate boundary burst spikes.
 - **Collection Scoping for PDF RAG:** Each uploaded PDF currently creates an isolated timestamped Qdrant collection (`pdf-{timestamp}`) to prevent cross-document leakage. Planned upgrade: store a shared collection filtered by `metadata.conversationId` + `metadata.userId` with TTL cleanup so users can ask follow-up questions about a PDF across multiple turns without re-uploading.
 - **Token Streaming (SSE):** Currently returns complete agent payloads over REST to simplify post-processing of artifacts and S3 links. Planned upgrade: Server-Sent Events (SSE) for real-time token streaming on `chat` and `coding` agents.
 - **Asynchronous Job Queue:** Offload heavy PDF/PPT generation and batch RAG indexing to BullMQ workers for horizontal scaling under concurrent load.
-
----
-
-
-**Sandipan Nayek**  
