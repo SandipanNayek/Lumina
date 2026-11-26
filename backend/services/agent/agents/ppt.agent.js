@@ -1,3 +1,4 @@
+import { checkAgentLimit } from "../config/agentLimit.js"
 import { getModel } from "../config/llmmodel.js"
 import { deductCredits } from "../utils/deductCredits.js"
 import { generatePpt } from "../utils/generatePpt.js"
@@ -9,6 +10,7 @@ export const pdfOrPptMime =
 
 export const pptAgent = async (state) => {
   try {
+    await checkAgentLimit(state.userId, "ppt")
     const llm = await getModel("ppt")
     const prompt = `You are an expert presentation writer.
 
@@ -40,18 +42,26 @@ Topic:
 ${state.prompt}`
 
     const res = await llm.invoke(prompt)
-    const raw = (typeof res?.content === "string" ? res.content : "")
+    const contentText = Array.isArray(res?.content)
+      ? res.content
+          .map((block) => (typeof block === "string" ? block : block?.text || ""))
+          .join("")
+      : typeof res?.content === "string"
+        ? res.content
+        : ""
+
+    const raw = contentText
       .replace(/^```(?:json)?\s*/i, "")
       .replace(/\s*```$/i, "")
       .trim()
 
     const data = JSON.parse(raw)
-    await deductCredits(state.userId , "ppt")
     const pptBuffer = await generatePpt(data)
     const filename = `ppt-${Date.now()}.pptx`
 
     await uploadToS3(filename, pptBuffer, pdfOrPptMime)
     const downloadUrl = await getFromS3(filename, 24 * 60 * 60)
+    await deductCredits(state.userId, "ppt")
 
     return {
       ...state,
@@ -64,12 +74,22 @@ ${state.prompt}`
 _Link expires in 1 Day._`,
     }
   } catch (error) {
-    const rawError = error?.response?.data
-      ? Buffer.from(error.response.data).toString("utf8")
-      : null
-    console.log(rawError || error)
+    const respData = error?.response?.data
+    const rawError = Buffer.isBuffer(respData)
+      ? respData.toString("utf8")
+      : typeof respData === "string"
+        ? respData
+        : null
 
-    let parsedMessage = error?.message || "failed to generate presentation"
+    console.log(error?.data || respData || error)
+
+    let parsedMessage =
+      error?.data?.message ||
+      respData?.message ||
+      respData?.error?.message ||
+      error?.message ||
+      "failed to generate presentation"
+
     if (rawError) {
       try {
         const parsed = JSON.parse(rawError)

@@ -1,3 +1,4 @@
+import { checkAgentLimit } from "../config/agentLimit.js";
 import { getModel } from "../config/llmmodel.js";
 import { deductCredits } from "../utils/deductCredits.js";
 
@@ -93,6 +94,7 @@ const extractProjectFiles = (rawText = "") => {
 
 export const codingAgent = async (state) => {
   try {
+    await checkAgentLimit(state.userId , "coding")
     const intentLlm = await getModel("intent");
     const llm = await getModel("coding");
 

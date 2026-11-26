@@ -3,10 +3,12 @@ import axios from "axios"
 import { uploadToS3 } from "../utils/uploadToS3.js"
 import { getFromS3 } from "../utils/getFromS3.js"
 import { deductCredits } from "../utils/deductCredits.js"
+import { checkAgentLimit } from "../config/agentLimit.js"
 const IMAGE_MODEL = "tongyi-mai/z-image-turbo"
 
 export const visionAgent = async (state) => {
     try {
+        await checkAgentLimit(state.userId , "image")
         const apiKey = process.env.POLLINATIONS_API_KEY?.replace(/^["']|["']$/g, "").trim()
         if (!apiKey) {
             throw new Error("POLLINATIONS_API_KEY is missing in .env")
