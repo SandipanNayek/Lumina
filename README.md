@@ -9,9 +9,6 @@
 ![Docker](https://img.shields.io/badge/Containerized-Docker-2496ED?logo=docker&logoColor=white)
 
 Lumina is a distributed, microservices-based AI orchestration platform built with **LangGraph**, **Node.js**, **React**, **Redis**, **Qdrant**, and **Google Gemini**. Instead of routing every prompt through a single generic LLM call, Lumina dynamically classifies user intent and uploaded media (PDFs and images) across specialized agents—complete with distributed per-agent rate limiting, credit-based billing, vector-backed RAG, ephemeral S3 document generation, and fault-tolerant model fallbacks.
-
-🔗 **Live Demo:** `<ADD_LIVE_URL>` &nbsp;|&nbsp; 🎥 **Walkthrough Video:** `<ADD_DEMO_VIDEO_URL>`
-
 ---
 
 ## Table of Contents
@@ -96,42 +93,42 @@ flowchart LR
 This section documents real production and distributed-systems edge cases encountered and resolved during development.
 
 ### 1. Gateway `413 Payload Too Large` & Multipart Boundary Corruption
-* **Problem:** `express-http-proxy` buffers request bodies by default with a 1 MB `raw-body` limit, rejecting PDF/image uploads with `413` and risking multipart boundary corruption when global JSON parsers run ahead of the proxy.
-* **Solution:** Configured `proxyWithHeader` to accept route-specific options and enabled `{ parseReqBody: false, limit: "20mb" }` on `/api/agent`. File streams now pipe directly to Multer on the Agent Service while preserving `proxyReqOptDecorator` for `x-user-id` injection.
+- **Problem:** `express-http-proxy` buffers request bodies by default with a 1 MB `raw-body` limit, rejecting PDF/image uploads with `413` and risking multipart boundary corruption when global JSON parsers run ahead of the proxy.
+- **Solution:** Configured `proxyWithHeader` to accept route-specific options and enabled `{ parseReqBody: false, limit: "20mb" }` on `/api/agent`. File streams now pipe directly to Multer on the Agent Service while preserving `proxyReqOptDecorator` for `x-user-id` injection.
 
 ### 2. LLM Demand Spikes (`503 Service Unavailable`) & Infinite UI Hangs
-* **Problem:** LangChain's `ChatGoogleGenerativeAI` defaults to `maxRetries: 6` with exponential backoff. Under preview-model traffic spikes, requests silently hung for 45–60 seconds on `"Thinking..."` before failing.
-* **Solution:** Set `maxRetries: 1` for fast failure and attached LangChain `.withFallbacks([fallbackModel])` in `config/llmmodel.js`, automatically failing over from `gemini-3-flash-preview` to a stable Flash/Lite model without stalling the user.
+- **Problem:** LangChain's `ChatGoogleGenerativeAI` defaults to `maxRetries: 6` with exponential backoff. Under preview-model traffic spikes, requests silently hung for 45–60 seconds on `"Thinking..."` before failing.
+- **Solution:** Set `maxRetries: 1` for fast failure and attached LangChain `.withFallbacks([fallbackModel])` in `config/llmmodel.js`, automatically failing over from `gemini-3-flash-preview` to a stable Flash/Lite model without stalling the user.
 
 ### 3. Multimodal Content-Block Schema Differences (`JSON.parse` Crashes)
-* **Problem:** Newer Gemini 3 endpoints return `response.content` as an array of structured blocks (`[{ type: "text", text: "..." }]`) rather than a plain string, causing downstream `JSON.parse()` failures in structured agents like `pptAgent`.
-* **Solution:** Normalized response extraction across the controller and structured agents to safely flatten both array-based content blocks and plain strings before stripping code fences and parsing JSON.
+- **Problem:** Newer Gemini 3 endpoints return `response.content` as an array of structured blocks (`[{ type: "text", text: "..." }]`) rather than a plain string, causing downstream `JSON.parse()` failures in structured agents like `pptAgent`.
+- **Solution:** Normalized response extraction across the controller and structured agents to safely flatten both array-based content blocks and plain strings before stripping code fences and parsing JSON.
 
 ### 4. Distributed Per-Agent Rate Limiting with Live Client Countdown
-* **Problem:** Expensive agents (`pdf`, `ppt`, `vision`, `search`, `coding`) have very different compute and API costs than standard `chat`. Static error strings also confuse users when reopening older conversations.
-* **Solution:**
-  * **Backend:** Implemented Redis `INCR` + `EXPIRE` + `TTL` keyed by `rate:{userId}:{agent}` with distinct per-minute thresholds and clamped `Math.max(1, ttl)` to avoid negative-TTL race conditions.
-  * **Frontend:** Built a `RateLimitNotice` component in `MessageBubble.jsx` that computes the exact expiration timestamp from `message.createdAt`, ticks down live every second (`tabular-nums`), transitions to a ready state at `0s`, and stays accurate across page reloads.
+- **Problem:** Expensive agents (`pdf`, `ppt`, `vision`, `search`, `coding`) have very different compute and API costs than standard `chat`. Static error strings also confuse users when reopening older conversations.
+- **Solution:**
+  - **Backend:** Implemented Redis `INCR` + `EXPIRE` + `TTL` keyed by `rate:{userId}:{agent}` with distinct per-minute thresholds and clamped `Math.max(1, ttl)` to avoid negative-TTL race conditions.
+  - **Frontend:** Built a `RateLimitNotice` component in `MessageBubble.jsx` that computes the exact expiration timestamp from `message.createdAt`, ticks down live every second (`tabular-nums`), transitions to a ready state at `0s`, and stays accurate across page reloads.
 
 ### 5. Atomic Credit Deduction (Zero-Charge on Failure)
-* **Problem:** Deducting user credits before file rendering or AWS S3 uploads meant users lost credits if PPT/PDF generation or network uploads failed mid-flight.
-* **Solution:** Ordered execution strictly as `checkAgentLimit` → `LLM Inference` → `File Build & S3 Upload` → `deductCredits`, ensuring credits are only charged on verifiable delivery.
+- **Problem:** Deducting user credits before file rendering or AWS S3 uploads meant users lost credits if PPT/PDF generation or network uploads failed mid-flight.
+- **Solution:** Ordered execution strictly as `checkAgentLimit` → `LLM Inference` → `File Build & S3 Upload` → `deductCredits`, ensuring credits are only charged on verifiable delivery.
 
 ### 6. Zero-Text File Uploads & Vague Prompt Expansion
-* **Problem:** Users frequently attach an image or PDF and press Enter without typing, or type single words like `"analyze"`—producing shallow 2-sentence captions and failing backend `!prompt` validation.
-* **Solution:**
-  * Updated controller validation to allow `prompt || file` and generate a descriptive `effectivePrompt` persisted to chat history and Redis memory.
-  * Added regex-based generic-prompt expansion in `imageAnalyzer` and `pdfRag` that upgrades vague prompts into structured multi-section analysis rubrics (Overview, Breakdown, Verbatim OCR/Metrics, Technical Insights, Takeaways) while keeping specific user questions prioritized first.
+- **Problem:** Users frequently attach an image or PDF and press Enter without typing, or type single words like `"analyze"`—producing shallow 2-sentence captions and failing backend `!prompt` validation.
+- **Solution:**
+  - Updated controller validation to allow `prompt || file` and generate a descriptive `effectivePrompt` persisted to chat history and Redis memory.
+  - Added regex-based generic-prompt expansion in `imageAnalyzer` and `pdfRag` that upgrades vague prompts into structured multi-section analysis rubrics (Overview, Breakdown, Verbatim OCR/Metrics, Technical Insights, Takeaways) while keeping specific user questions prioritized first.
 
 ### 7. Storage Hygiene & Ephemeral Asset Lifecycle
-* **Problem:** Temporary Multer uploads can leak disk space on exceptions, and cloud-hosted generated files accumulate storage costs indefinitely.
-* **Solution:**
-  * Wrapped temporary file cleanup (`fs.unlink`) inside `finally` blocks in both `pdfRag` and `imageAnalyzer` so files are deleted whether inference succeeds or throws.
-  * Enforced a 24-hour retention policy on S3/Cloudinary assets; the frontend detects expired timestamps or broken asset loads and swaps in an `ExpiredMediaCard` with a one-click **Regenerate** action referencing the prior user prompt.
+- **Problem:** Temporary Multer uploads can leak disk space on exceptions, and cloud-hosted generated files accumulate storage costs indefinitely.
+- **Solution:**
+  - Wrapped temporary file cleanup (`fs.unlink`) inside `finally` blocks in both `pdfRag` and `imageAnalyzer` so files are deleted whether inference succeeds or throws.
+  - Enforced a 24-hour retention policy on S3/Cloudinary assets; the frontend detects expired timestamps or broken asset loads and swaps in an `ExpiredMediaCard` with a one-click **Regenerate** action referencing the prior user prompt.
 
 ### 8. Downstream Error Normalization (`Buffer` vs JSON Axios Errors)
-* **Problem:** Calling `Buffer.from(error.response.data)` blindly in `catch` blocks crashed with `ERR_INVALID_ARG_TYPE` whenever billing or internal services returned standard JSON error objects instead of binary buffers.
-* **Solution:** Guarded error parsing with `Buffer.isBuffer()` checks and prioritized custom rate-limit payloads (`error?.data?.message`) before falling back to Axios and generic error messages.
+- **Problem:** Calling `Buffer.from(error.response.data)` blindly in `catch` blocks crashed with `ERR_INVALID_ARG_TYPE` whenever billing or internal services returned standard JSON error objects instead of binary buffers.
+- **Solution:** Guarded error parsing with `Buffer.isBuffer()` checks and prioritized custom rate-limit payloads (`error?.data?.message`) before falling back to Axios and generic error messages.
 
 ---
 
@@ -211,9 +208,9 @@ Lumina/
 ## Local Setup & Installation
 
 ### Prerequisites
-* Node.js `v20+` (tested on `v22.17.0`)
-* Docker Desktop (for Redis and Qdrant)
-* MongoDB URI, Google Gemini API Key, and AWS S3 credentials
+- Node.js `v20+` (tested on `v22.17.0`)
+- Docker Desktop (for Redis and Qdrant)
+- MongoDB URI, Google Gemini API Key, and AWS S3 credentials
 
 ### 1. Clone the Repository
 ```bash
@@ -275,15 +272,12 @@ cd frontend && npm install && npm run dev
 
 ## Design Trade-offs & Future Roadmap
 
-* **Fixed-Window vs. Sliding-Window Rate Limiting:** Currently uses Redis `INCR` + `EXPIRE` for $O(1)$ simplicity and minimal overhead. Planned upgrade: atomic Redis Lua script implementing a sliding window log to eliminate boundary burst spikes.
-* **Collection Scoping for PDF RAG:** Each uploaded PDF currently creates an isolated timestamped Qdrant collection (`pdf-{timestamp}`) to prevent cross-document leakage. Planned upgrade: store a shared collection filtered by `metadata.conversationId` + `metadata.userId` with TTL cleanup so users can ask follow-up questions about a PDF across multiple turns without re-uploading.
-* **Token Streaming (SSE):** Currently returns complete agent payloads over REST to simplify post-processing of artifacts and S3 links. Planned upgrade: Server-Sent Events (SSE) for real-time token streaming on `chat` and `coding` agents.
-* **Asynchronous Job Queue:** Offload heavy PDF/PPT generation and batch RAG indexing to BullMQ workers for horizontal scaling under concurrent load.
+- **Fixed-Window vs. Sliding-Window Rate Limiting:** Currently uses Redis `INCR` + `EXPIRE` for $O(1)$ simplicity and minimal overhead. Planned upgrade: atomic Redis Lua script implementing a sliding window log to eliminate boundary burst spikes.
+- **Collection Scoping for PDF RAG:** Each uploaded PDF currently creates an isolated timestamped Qdrant collection (`pdf-{timestamp}`) to prevent cross-document leakage. Planned upgrade: store a shared collection filtered by `metadata.conversationId` + `metadata.userId` with TTL cleanup so users can ask follow-up questions about a PDF across multiple turns without re-uploading.
+- **Token Streaming (SSE):** Currently returns complete agent payloads over REST to simplify post-processing of artifacts and S3 links. Planned upgrade: Server-Sent Events (SSE) for real-time token streaming on `chat` and `coding` agents.
+- **Asynchronous Job Queue:** Offload heavy PDF/PPT generation and batch RAG indexing to BullMQ workers for horizontal scaling under concurrent load.
 
 ---
 
 
-
 **Sandipan Nayek**  
-B.Tech in Information Technology — Jalpaiguri Government Engineering College  
-[GitHub](https://github.com/SandipanNayek) • [LinkedIn](<ADD_LINKEDIN_URL>) • [LeetCode](https://leetcode.com/u/sandipan_nayek-08/)
