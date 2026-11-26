@@ -10,6 +10,11 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000
 
+const isLuminaHostedAsset = (url = "") => {
+  if (!url || typeof url !== "string") return false
+  return /res\.cloudinary\.com/i.test(url)
+}
+
 const isFileExpired = (createdAt) => {
   if (!createdAt) return false
   const createdTime = new Date(createdAt).getTime()
@@ -32,10 +37,7 @@ const getExpiryLabel = (createdAt) => {
 
 const isHostedMediaDoc = (href = "") => {
   if (!href) return false
-  return (
-    /res\.cloudinary\.com/i.test(href) ||
-    /\.(pdf|pptx?)(\?|#|$)/i.test(href)
-  )
+  return isLuminaHostedAsset(href) && /\.(pdf|pptx?|raw)(\?|#|$)/i.test(href)
 }
 
 const extractText = (node) => {
@@ -94,10 +96,20 @@ function ExpiredMediaCard({ type = "file", fileName, onRegenerate }) {
 
 function ChatMediaImage({ src, alt = "image", createdAt, className, onOpenLightbox, onRegenerate }) {
   const [failed, setFailed] = useState(false)
-  const expired = failed || isFileExpired(createdAt)
+  const hostedByLumina = isLuminaHostedAsset(src)
+  const expired = hostedByLumina && (failed || isFileExpired(createdAt))
 
   if (expired) {
     return <ExpiredMediaCard type="image" onRegenerate={onRegenerate} />
+  }
+
+  if (!hostedByLumina && failed) {
+    return (
+      <div className="my-1.5 inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-[#0b0e15] px-3 py-2 text-[12px] text-zinc-400">
+        <ImageOff size={14} className="text-zinc-500 shrink-0" />
+        <span>External image unavailable</span>
+      </div>
+    )
   }
 
   return (
@@ -110,9 +122,11 @@ function ChatMediaImage({ src, alt = "image", createdAt, className, onOpenLightb
         onClick={() => onOpenLightbox?.(src)}
         className={className}
       />
-      <span className="pointer-events-none absolute bottom-2 right-2 rounded-md bg-black/75 px-2 py-0.5 text-[10.5px] font-medium text-zinc-300 opacity-0 group-hover/img:opacity-100 transition-opacity">
-        {getExpiryLabel(createdAt)}
-      </span>
+      {hostedByLumina && (
+        <span className="pointer-events-none absolute bottom-2 right-2 rounded-md bg-black/75 px-2 py-0.5 text-[10.5px] font-medium text-zinc-300 opacity-0 group-hover/img:opacity-100 transition-opacity">
+          {getExpiryLabel(createdAt)}
+        </span>
+      )}
     </div>
   )
 }
@@ -121,8 +135,9 @@ function ChatMediaDoc({ href, label, createdAt, onRegenerate }) {
   const cleanLabel = label || href.split("/").pop()?.split("?")[0] || "Generated File"
   const isPpt = /\.pptx?(\?|#|$)/i.test(href) || /\bpptx?\b/i.test(cleanLabel)
   const docType = isPpt ? "ppt" : "pdf"
+  const hostedByLumina = isLuminaHostedAsset(href)
 
-  if (isFileExpired(createdAt)) {
+  if (hostedByLumina && isFileExpired(createdAt)) {
     return (
       <ExpiredMediaCard
         type={docType}
@@ -147,7 +162,9 @@ function ChatMediaDoc({ href, label, createdAt, onRegenerate }) {
         </div>
         <div className="min-w-0">
           <p className="text-[13px] font-medium text-zinc-100 truncate">{cleanLabel}</p>
-          <p className="text-[11px] text-zinc-500">{getExpiryLabel(createdAt)}</p>
+          <p className="text-[11px] text-zinc-500">
+            {hostedByLumina ? getExpiryLabel(createdAt) : "External document"}
+          </p>
         </div>
       </div>
       <Download size={14} className="shrink-0 text-zinc-400" />

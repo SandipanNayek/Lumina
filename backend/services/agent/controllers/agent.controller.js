@@ -2,14 +2,20 @@ import axios from "axios";
 import { graph } from "../graph/graph.js";
 import { addMessage } from "../config/memory.js";
 
-
 export const agent = async (req, res) => {
   try {
     const { prompt, conversationId, agent: selectedAgent } = req.body;
-    const file = req.file 
-    if (!prompt?.trim() || !conversationId) {
-      return res.status(400).json({ message: "prompt and conversationId are required" });
+    const file = req.file || null;
+
+    if ((!prompt?.trim() && !file) || !conversationId) {
+      return res.status(400).json({ message: "prompt or file, and conversationId are required" });
     }
+
+    const effectivePrompt =
+      prompt?.trim() ||
+      (file?.mimetype === "application/pdf"
+        ? "Summarize and analyze this PDF document in detail."
+        : "Analyze this image in detail.");
 
     const authHeader = {
       headers: {
@@ -17,24 +23,24 @@ export const agent = async (req, res) => {
       },
     };
 
-    const userId = req.headers["x-user-id"]
+    const userId = req.headers["x-user-id"];
 
     await axios.post(
       `${process.env.CHAT_SERVICE}/save-message`,
       {
         conversationId,
         role: "user",
-        content: prompt,
+        content: effectivePrompt,
       },
       authHeader
     );
 
     const result = await graph.invoke({
-      prompt,
+      prompt: effectivePrompt,
       conversationId,
       agent: selectedAgent,
       userId,
-      file
+      file,
     });
 
     const rawResponse =
@@ -58,14 +64,13 @@ export const agent = async (req, res) => {
       (result?.artifact ? [result.artifact] : []);
     const artifacts = (Array.isArray(rawArtifacts) ? rawArtifacts : [rawArtifacts]).filter(Boolean);
 
-   
     const answerText =
       extractedText.trim() ||
       (images.length === 0 && artifacts.length === 0
         ? "Sorry, I couldn't generate a response for that request. Please try again."
         : "");
 
-    await addMessage(conversationId, "user", prompt);
+    await addMessage(conversationId, "user", effectivePrompt);
     await addMessage(
       conversationId,
       "assistant",

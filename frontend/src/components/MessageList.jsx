@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { Sparkles } from 'lucide-react'
 import MessageBubble from './MessageBubble'
+import LoadingAnimation from './LoadingAnimation'
 
 function MessageList({ onOpenArtifact, onRegenerate }) {
   const messages = useSelector((state) => state.message?.messages) ?? []
@@ -51,16 +52,7 @@ function MessageList({ onOpenArtifact, onRegenerate }) {
           )
         })}
 
-        {isLoading && (
-          <div className="flex items-start gap-3">
-            <div className="shrink-0 mt-0.5 w-7 h-7 rounded-lg bg-teal-500/10 border border-teal-500/25 flex items-center justify-center">
-              <Sparkles size={13} className="text-teal-300 animate-pulse" />
-            </div>
-            <div className="px-3.5 py-2.5 rounded-2xl bg-white/[0.03] border border-white/[0.06] text-[14px] text-zinc-400 animate-pulse">
-              Thinking...
-            </div>
-          </div>
-        )}
+        {isLoading && <LoadingAnimation />}
 
         <div ref={bottomRef} />
       </div>

@@ -1,4 +1,4 @@
-import { Code2, FileText, Globe, ImageIcon, MessageSquare, Mic, MicOff, Paperclip, Presentation, Send, X, Zap } from 'lucide-react'
+import { Clock, Code2, FileText, Globe, ImageIcon, MessageSquare, Mic, MicOff, Paperclip, Presentation, Send, X, Zap } from 'lucide-react'
 import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import sendMessage from '../features/sendMessage'
@@ -7,7 +7,7 @@ import { createConversation } from '../features/createConversation'
 import { addConversation, setconvTitle, setSelectedConversation } from '../redux/conversationSlice'
 import { updateConversation } from '../features/updateConversation'
 
-function ChatInput() {
+function ChatInput({ prefill, onClearPrefill } = {}) {
   const [value, setValue] = useState("")
   const [selectedAgent, setSelectedAgent] = useState("Auto")
   const selectedConversation = useSelector((state) => state.conversation?.selectedConversation)
@@ -17,6 +17,18 @@ function ChatInput() {
   const recognitionRef = useRef(null)
   const fileRef = useRef(null)
   const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (!prefill) return
+
+    const timeoutId = window.setTimeout(() => {
+      if (prefill.prompt) setValue(prefill.prompt)
+      if (prefill.agent) setSelectedAgent(prefill.agent)
+      onClearPrefill?.()
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [prefill, onClearPrefill])
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -58,7 +70,8 @@ function ChatInput() {
 
   const handleSendMessage = async () => {
     const promptText = value.trim()
-    if ((!promptText && !selectedFile) || isLoading) return
+    const currentFile = selectedFile
+    if ((!promptText && !currentFile) || isLoading) return
 
     dispatch(setIsLoading(true))
     try {
@@ -77,9 +90,23 @@ function ChatInput() {
         prompt: promptText,
         conversationId: conversation?._id,
         agent: selectedAgent.toLowerCase(),
+        file: currentFile,
       }
 
-      dispatch(addMessage({ role: "user", content: promptText || selectedFile?.name  }))
+      const isImageFile = currentFile?.type?.startsWith("image/")
+      const isPdfFile = currentFile?.type === "application/pdf"
+      const localPreviewUrl = currentFile ? URL.createObjectURL(currentFile) : null
+
+      dispatch(
+        addMessage({
+          role: "user",
+          content: promptText || (!isImageFile && !isPdfFile ? currentFile?.name : ""),
+          images: isImageFile && localPreviewUrl ? [localPreviewUrl] : [],
+          fileUrl: isPdfFile && localPreviewUrl ? localPreviewUrl : undefined,
+          fileName: isPdfFile ? currentFile?.name : undefined,
+          createdAt: new Date().toISOString(),
+        })
+      )
       setValue("")
       setSelectedFile(null)
       if (fileRef.current) fileRef.current.value = ""
@@ -93,6 +120,9 @@ function ChatInput() {
             content: data?.answer,
             images: data?.images || [],
             artifacts: data?.artifacts || [],
+            fileUrl: data?.fileUrl,
+            fileName: data?.fileName,
+            createdAt: data?.createdAt || new Date().toISOString(),
           })
         )
       }
@@ -108,7 +138,7 @@ function ChatInput() {
           data?.title ||
           data?.conversation?.title ||
           promptText ||
-          selectedFile?.name ||
+          currentFile?.name ||
           "New Chat"
         ).slice(0, 40)
 
@@ -160,6 +190,7 @@ function ChatInput() {
   ]
 
   const canSend = (value.trim().length > 0 || Boolean(selectedFile)) && !isLoading
+  const isMediaAgent = ["PDF", "PPT", "Vision"].includes(selectedAgent)
 
   return (
     <div className="w-full shrink-0 px-3 sm:px-6 pb-4 pt-2 bg-[#07090e] select-none antialiased">
@@ -202,12 +233,12 @@ function ChatInput() {
                 )
               )}
 
-              <div className="min-w-0 max-w-[200px]">
+              <div className="min-w-0 max-w-[220px]">
                 <p className="text-[13px] font-medium text-zinc-100 truncate">
                   {selectedFile?.name}
                 </p>
                 <p className="text-[11px] text-zinc-500">
-                  {Math.max(1, Math.ceil(selectedFile.size / 1024))} KB
+                  {Math.max(1, Math.ceil(selectedFile.size / 1024))} KB • Expires in 1d
                 </p>
               </div>
 
@@ -272,6 +303,13 @@ function ChatInput() {
           </div>
 
           <div className="flex items-center gap-2.5">
+            {(isMediaAgent || selectedFile) && (
+              <span className="inline-flex items-center gap-1 text-[11px] text-amber-400/80 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                <Clock size={10} />
+                Files auto-delete in 1d
+              </span>
+            )}
+
             <span className="hidden sm:inline text-[11.5px] text-zinc-600">
               Enter to send
             </span>
